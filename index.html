@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puzzle Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f3f3f3;
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    #puzzle-container {
+        display: inline-block;
+        border: 2px solid #333;
+        background-color: #f3f3f3;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .puzzle-piece {
+        display: inline-block;
+        width: 80px;
+        height: 200px;
+        background-color: #f7f7f7;
+        border: 1px solid #333;
+        box-sizing: border-box;
+        cursor: pointer;
+        font-size: 24px;
+        line-height: 200px;
+        transition: background-color 0.3s;
+    }
+
+    .puzzle-piece:hover {
+        background-color: #e0e0e0;
+    }
+
+    .empty {
+        visibility: hidden;
+    }
+
+    #instructions {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #666;
+    }
+</style>
+</head>
+<body>
+<h1>Puzzle Game</h1>
+<div id="puzzle-container"></div>
+<p id="instructions">Click on adjacent pieces to move them. Rearrange the numbers from 1 to 8 in ascending order.</p>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const puzzleContainer = document.getElementById('puzzle-container');
+        const puzzleSize = 3; // 3x3 puzzle
+        const pieces = [];
+
+        function loadPianoSound() {
+            const audio = new Audio('soft-piano-100-bpm-121529.mp3'); // Replace with your piano sound URL
+            return audio;
+        }
+
+        // Initialize puzzle pieces
+        for (let i = 0; i < puzzleSize * puzzleSize - 1; i++) {
+            const piece = document.createElement('div');
+            piece.classList.add('puzzle-piece');
+            piece.textContent = i + 1;
+            piece.addEventListener('click', () => movePiece(piece));
+            puzzleContainer.appendChild(piece);
+            pieces.push(piece);
+        }
+
+        // Empty piece represents the empty space
+        const emptyPiece = document.createElement('div');
+        emptyPiece.classList.add('puzzle-piece', 'empty');
+        emptyPiece.textContent = ''; // No text in the empty piece
+        puzzleContainer.appendChild(emptyPiece);
+        pieces.push(emptyPiece);
+
+        // Shuffle the puzzle pieces
+        shufflePieces();
+
+        function movePiece(piece) {
+            const emptyIndex = pieces.indexOf(emptyPiece);
+            const pieceIndex = pieces.indexOf(piece);
+            if (isAdjacent(pieceIndex, emptyIndex)) {
+                const pianoAudio = loadPianoSound();
+                pianoAudio.play();
+
+                // Swap positions of the clicked piece and the empty piece
+                const temp = pieces[emptyIndex];
+                pieces[emptyIndex] = pieces[pieceIndex];
+                pieces[pieceIndex] = temp;
+
+                // Re-render the puzzle pieces
+                renderPuzzle();
+                checkWin();
+            }
+        }
+
+        function isAdjacent(index1, index2) {
+            const row1 = Math.floor(index1 / puzzleSize);
+            const col1 = index1 % puzzleSize;
+            const row2 = Math.floor(index2 / puzzleSize);
+            const col2 = index2 % puzzleSize;
+            return Math.abs(row1 - row2) + Math.abs(col1 - col2) === 1;
+        }
+
+        function shufflePieces() {
+            for (let i = pieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+            }
+            renderPuzzle();
+        }
+
+        function renderPuzzle() {
+            puzzleContainer.innerHTML = '';
+            pieces.forEach(piece => puzzleContainer.appendChild(piece));
+        }
+
+        function checkWin() {
+            const correctOrder = Array.from({ length: puzzleSize * puzzleSize - 1 }, (_, i) => i + 1);
+            if (pieces.every((piece, index) => index === pieces.length - 1 || parseInt(piece.textContent) === correctOrder[index])) {
+                alert('Congratulations! You solved the puzzle.');
+            }
+        }
+    });
+</script>
+</body>
+</html>
